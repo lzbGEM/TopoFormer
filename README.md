@@ -103,7 +103,7 @@ Use the [preprocessing](#dataset-specific-topology-preprocessing), [training](#t
 
 ### Reported environment
 
-The reference A40 environment used for training and evaluation was:
+The reference software and hardware for the reported experiments and the public release are listed below.
 
 | Package / Hardware | Version |
 |---|---|
@@ -133,7 +133,7 @@ Verify the main software stack:
 python -c "import torch, gudhi; print(torch.__version__, torch.version.cuda, gudhi.__version__)"
 ```
 
-`requirements.txt` is intended as a cleaned project-level dependency list rather than a full operating-system or Conda environment export.
+`requirements.txt` is a project-level dependency list. It records exact versions for selected packages, including PyTorch, torchvision, and GUDHI, and version bounds for other dependencies, including NumPy, Pillow, OpenCV, and tqdm. The original PH caches used in the manuscript were extracted with GUDHI 3.10.0. The public release specifies GUDHI 3.11.0.
 
 If the default PyTorch wheel does not match the local CUDA installation, install the appropriate PyTorch/torchvision build for the target system before installing the remaining dependencies.
 
@@ -389,7 +389,7 @@ python prepare_ph.py briancancer 200 --config config.local.json
 python prepare_ph.py crc 180 --config config.local.json
 ```
 
-The extractor saves the four TopoFPN levels on their native grids for token interaction and the **1,600-dimensional** global vector formed from the same native fused levels. The three foreground thresholds documented in Table S5 are supported as preprocessing settings. Each threshold has its own cache location.
+The extractor saves the four TopoFPN levels on their native grids for token interaction and the **1,600-dimensional** global vector formed from the same native fused levels. The three foreground thresholds documented in Supplementary Table S3 are supported as preprocessing settings. Each threshold has its own cache location.
 
 A typical cache contains:
 
@@ -548,7 +548,7 @@ Implementation:
 topoformer/model/disentanglement.py
 ```
 
-DFDA produces the discriminative features and NFDA the nuisance features. Their supervision shapes the shared visual representation during training. The export retains both branches and their predictions. The covariance and KL terms are active from epoch 2.
+DFDA produces the discriminative features and NFDA the nuisance features. Their supervision shapes the shared visual representation during training. The export retains both branches and their predictions. The cross-covariance regularization is active from epoch 1. The auxiliary KL term has zero weight during epoch 1 and becomes active in epoch 2.
 
 Reported objective weights:
 
@@ -647,7 +647,7 @@ The manuscript and supplementary experiments additionally evaluate:
 - external TCGA-UT generalization;
 - paired statistical comparisons.
 
-The manuscript and supplement provide the analysis protocols and results. Figure 3 uses five fixed tiles per dataset and computes Grad-CAM from DFDA at block −2 on DeepHisto and block −5 on CRC. The faithfulness analysis recomputes the PH maps after blurring 5%, 10%, or 20% of the tissue and scores DFDA probabilities. The stain and patch-shuffle analyses use transformed test inputs. The paired comparisons require aligned sample IDs, true labels, classes, and predicted probabilities for each seed from both models.
+The manuscript and supplement provide the analysis protocols and results. Figure 3 uses five fixed tiles per dataset and computes Grad-CAM for the DFDA classifier at the pre-attention normalization layer of DINOv3 block 39 on both DeepHisto and CRC (one-based numbering, corresponding to `blocks[-2].norm1`). The faithfulness analysis uses the same Grad-CAM target layer and recomputes the PH maps after blurring 5%, 10%, or 20% of the tissue and scores DFDA probabilities. The stain and patch-shuffle analyses use transformed test inputs. The paired comparisons require aligned sample IDs, true labels, classes, and predicted probabilities for each seed from both models.
 
 ### Foreground-threshold settings used in the main experiments
 
@@ -671,7 +671,7 @@ Counts from the full models loaded with the seed-42 checkpoints:
 | DeepHisto (five classes) | 6,869,929,109 | 66,188,949 |
 | CRC (nine classes) | 6,869,930,657 | 66,190,497 |
 
-Supplementary Section 6 reports a separately profiled TopoFormer configuration with 7.12B total and 321.6M trainable parameters. The counts above describe the gated checkpoints used by this release.
+Supplementary Section 4 (Table S2) reports the computational measurements for this configuration, with approximately 6.870B total parameters and 66.190M trainable parameters.
 
 The large DINOv3 backbone is frozen and adapted with LoRA; however, freezing parameters does not remove the inference-time computational cost of executing the backbone.
 
